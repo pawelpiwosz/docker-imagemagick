@@ -11,7 +11,7 @@ bucketpath="$(pwd)/tests/bucket"
 for action in "${actions[@]}"
 do
   echo ${action}
-  if ! docker run --rm -v ${bucketpath}:/bucket imagemagick ${action}
+  if ! docker run --rm -v "${bucketpath}":/bucket imagemagick "${action}"
   #if [[ $? != 0 ]]
   then
     echo "${action} failed!"

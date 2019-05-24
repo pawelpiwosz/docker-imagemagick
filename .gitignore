@@ -1,0 +1,2 @@
+tests/bucket/*
+!tests/bucket/plant.jpg

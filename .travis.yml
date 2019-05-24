@@ -37,7 +37,7 @@ jobs:
     script:
       - docker build -t imagemagick .
       - bucketpath="$(pwd)/tests/bucket"
-      - docker run --rm imagemagick -v ${bucketpath}:/bucket convert plant.jpg -resize 50% resized50.jpg
+      - echo ${bucketpath}; docker run --rm imagemagick -v ${bucketpath}:/bucket convert plant.jpg -resize 50% resized50.jpg
       - ./tests/transformations.sh
 
   - stage: Push container

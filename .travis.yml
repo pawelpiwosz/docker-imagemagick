@@ -1,0 +1,58 @@
+sudo: required
+dist: trusty
+language: bash
+
+stages:
+  - name: Script tests
+  - name: Build test
+  - name: Push container
+    if: branch = master && type = pull_request
+  - name: Check container
+    if: branch = master || type = pull_request
+
+
+services:
+  - docker
+
+install:
+  - sudo apt-add-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse"
+  - sudo apt-get -qq update
+  - sudo apt-get -t trusty-backports install shellcheck
+  - sudo pip install bashate
+
+jobs:
+  include:
+  - stage: Script tests
+    script:
+      - echo ${TRAVIS_COMMIT}
+      - echo ${TRAVIS_TAG}
+      - echo ${TRAVIS_BRANCH}
+      - echo ${TRAVIS_BUILD_NUMBER}
+      - echo ${TRAVIS_REPO_SLUG}
+      # test bash scripts
+      # unfortunatelly, this check must be omitted.
+      - shellcheck -e SC2086 tests/*.sh
+      - bashate tests/*.sh
+
+  - stage: Build test
+    script:
+      - docker build -t imagemagick .
+      - bucketpath="$(pwd)/tests/bucket"
+      - echo ${bucketpath}; docker run --rm -v ${bucketpath}:/bucket imagemagick convert plant.jpg -resize 50% resized50.jpg
+      - ./tests/transformations.sh
+
+  - stage: Push container
+    script:
+      - echo "push to repo"
+      - docker build -t imagemagick .
+      - docker images
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker tag imagemagick ${DOCKER_USERNAME}/imagemagick
+      - docker push ${DOCKER_USERNAME}/imagemagick
+      - docker logout
+
+  - stage: Check container
+    script:
+      - docker pull ${DOCKER_USERNAME}/imagemagick
+      - bucketpath="$(pwd)/tests/bucket"
+      - docker run --rm -v ${bucketpath}:/bucket ${DOCKER_USERNAME}/imagemagick convert plant.jpg -resize 50% resized50.jpg

@@ -7,12 +7,12 @@ actions=(
   "convert plant.jpg -rotate 90 rotate.jpg"
   "convert plant.jpg -negate negate.jpg"
 )
-bucketpath="$(pwd)/bucket"
+bucketpath="$(pwd)/tests/bucket"
 for action in "${actions[@]}"
 do
   echo ${action}
-  docker run --rm -v ${bucketpath}:/bucket imagemagick ${action}
-  if [[ $? != 0 ]]
+  if ! docker run --rm -v ${bucketpath}:/bucket imagemagick ${action}
+  #if [[ $? != 0 ]]
   then
     echo "${action} failed!"
     exit 1

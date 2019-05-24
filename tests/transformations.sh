@@ -8,8 +8,7 @@ actions=(
     "convert plant.jpg -negate negate.jpg"
 )
 bucketpath="$(pwd)/tests/bucket"
-for action in "${actions[@]}"
-do
+for action in "${actions[@]}"; do
     echo "${action}"
     if ! docker run --rm -v "${bucketpath}":/bucket imagemagick "${action}"
     then
